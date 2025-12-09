@@ -4,7 +4,7 @@ from text_processing import tokenize_and_process, tokenize_simple, stop_words
 
 def search_comand(query: str) -> list[dict]:
     movies = []
-    query_tokens = tokenize_and_process(query)
+    query_tokens = tokenize_simple(query)
 
     if not query_tokens:
         return movies
