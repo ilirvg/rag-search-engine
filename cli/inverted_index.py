@@ -1,3 +1,4 @@
+from ntpath import isfile
 from fetch_data import get_movies_list
 from text_processing import tokenize_and_process
 
@@ -28,15 +29,14 @@ class InvertedIndex():
             self.__add_document(movie['id'], text)
             InvertedIndex.docmap[movie['id']] = movie
 
-    def pickle_object(self, path, obj) -> None:
+    def pickle_dump(self, path, obj) -> None:
         try:
             with open(path, 'wb') as file:
                 pickle.dump(obj, file)
         except IOError as e:
             print(f"Error creating/writing to file {path}: {e}")
         except pickle.PickleError as e:
-            print(f"Error while tyring to pickele {e}")
-
+            print(f"Error while tyring to dump pickele {e}")
 
     def save(self):
         cache_path = Path("cache")
@@ -44,9 +44,35 @@ class InvertedIndex():
         index_path = cache_path / 'index.pkl'
         docmap_path = cache_path / 'docmap.pkl'
         
-        self.pickle_object(index_path, InvertedIndex.index)
-        self.pickle_object(docmap_path, InvertedIndex.docmap)
+        self.pickle_dump(index_path, InvertedIndex.index)
+        self.pickle_dump(docmap_path, InvertedIndex.docmap)
 
+    def pickle_load(self, path) -> object:
+        try:
+            with open(path, 'rb') as file:
+                loaded_object = pickle.load(file)
+                return loaded_object
+        except IOError as e:
+            print(f"Error opening the file {path}: {e}")
+        except pickle.PickleError as e:
+            print(f"Error while tyring to load pickele {e}")
+
+    def load(self):
+        try:
+            cache_path = Path("cache")
+            index_path = cache_path / 'index.pkl'
+            docmap_path = cache_path / 'docmap.pkl'
+
+            if not index_path.exists():
+                raise FileNotFoundError(f"Index file not found: {index_path}")
+            if not docmap_path.exists():
+                raise FileNotFoundError(f"Docmap file not found: {docmap_path}")
+
+            InvertedIndex.index = self.pickle_load(index_path)
+            InvertedIndex.docmap = self.pickle_load(docmap_path)
+        except Exception as e:
+            print(f"Error loading {e}")
+            exit()
 
 if __name__ == "__main__":
     idx = InvertedIndex()

@@ -19,8 +19,8 @@ def main() -> None:
             search_query = args.query
             searched_movies = search_comand(search_query)
             print(f'Searching for: {search_query}')
-            for index, movie in enumerate(searched_movies[:5]):
-                print(f'{index + 1}. {movie['title']}')
+            for index, movie in enumerate(searched_movies):
+                print(f'{index + 1}. {movie['id']} {movie['title']}')
             
         case "build":
             idx = InvertedIndex()
