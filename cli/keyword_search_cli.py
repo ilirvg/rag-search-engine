@@ -1,4 +1,5 @@
 import argparse
+import math
 from re import sub
 from keyword_search import search_comand
 from inverted_index import InvertedIndex
@@ -12,7 +13,16 @@ def main() -> None:
 
     build_parser = subparsers.add_parser("build", help="Build the inverted index")
 
+    tf_parser = subparsers.add_parser('tf', help="Get the token frequency")
+    tf_parser.add_argument("doc_id", type=int, help="The ID of the documetn we need to search on")
+    tf_parser.add_argument("term", type=str, help="The token we need to get the frequency")
+
+    idf_parser = subparsers.add_parser("idf", help="Get the inverted document frequency")
+    idf_parser.add_argument("term", type=str, help="The token we need to get idf")
+
     args = parser.parse_args()
+
+    idx = InvertedIndex()
 
     match args.command:
         case "search":
@@ -23,9 +33,20 @@ def main() -> None:
                 print(f'{index + 1}. {movie['id']} {movie['title']}')
             
         case "build":
-            idx = InvertedIndex()
             idx.build()
             idx.save()
+        
+        case "tf":
+            idx.load()
+            frequency = idx.get_tf(args.doc_id, args.term)
+            print(f"Term {args.term} is found {frequency} times in document {args.doc_id}")
+            
+        case "idf":
+            idx.load()
+            total_doc_count = len(idx.docmap)
+            term_match_doc_count = len(idx.get_documents(args.term))
+            idf_value = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+            print(f"Inverse document frequency of '{args.term}': {idf_value:.2f}")
             
         case _:
             parser.print_help()
