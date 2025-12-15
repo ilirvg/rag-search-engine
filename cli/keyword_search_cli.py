@@ -20,6 +20,10 @@ def main() -> None:
     idf_parser = subparsers.add_parser("idf", help="Get the inverted document frequency")
     idf_parser.add_argument("term", type=str, help="The token we need to get idf")
 
+    tfidf_parser = subparsers.add_parser("tfidf", help="Term Frequency-Inverse Document Frequency")
+    tfidf_parser.add_argument("doc_id", type=int, help="The ID of the documetn we need to search on")
+    tfidf_parser.add_argument("term", type=str, help="The token we need to get the frequency")
+
     args = parser.parse_args()
 
     idx = InvertedIndex()
@@ -38,8 +42,8 @@ def main() -> None:
         
         case "tf":
             idx.load()
-            frequency = idx.get_tf(args.doc_id, args.term)
-            print(f"Term {args.term} is found {frequency} times in document {args.doc_id}")
+            tf_value = idx.get_tf(args.doc_id, args.term)
+            print(f"Term {args.term} is found {tf_value} times in document {args.doc_id}")
             
         case "idf":
             idx.load()
@@ -47,7 +51,16 @@ def main() -> None:
             term_match_doc_count = len(idx.get_documents(args.term))
             idf_value = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
             print(f"Inverse document frequency of '{args.term}': {idf_value:.2f}")
-            
+
+        case "tfidf":
+            idx.load()
+            tf_value = idx.get_tf(args.doc_id, args.term)
+            total_doc_count = len(idx.docmap)
+            term_match_doc_count = len(idx.get_documents(args.term))
+            idf_value = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+            tfidf_value = tf_value * idf_value
+            print(f"TF-IDF score of '{args.term}' in document '{args.doc_id}': {tfidf_value:.2f}")
+
         case _:
             parser.print_help()
 
